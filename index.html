@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>yonder | Premium Destination Map</title>
+
+  <style>
+    @import url("https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css");
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
+
+    :root {
+      --primary: #76F7EA;
+      --primary-rgb: 118, 247, 234;
+      --primary-dark: #0D9488;
+      --bg: #F5F7F8;
+      --surface: rgba(255, 255, 255, 0.65);
+      --surface-bright: rgba(255, 255, 255, 0.85);
+      --border: rgba(15, 23, 42, 0.08);
+      --border-bright: rgba(13, 148, 136, 0.35);
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --accent: #D97706;
+      --accent-rgb: 217, 119, 6;
+      --shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+      --glass-blur: blur(25px);
+      --font-logo: "Space Grotesk", sans-serif;
+      --font-body: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollbar Style */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(118, 247, 234, 0.2);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(118, 247, 234, 0.4);
+    }
+
+    /* Custom Cursor */
+    .custom-cursor {
+      width: 8px;
+      height: 8px;
+      background: var(--primary-dark);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, background-color 0.2s;
+    }
+
+    .custom-cursor-follower {
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(13, 148, 136, 0.3);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s cubic-bezier(0.25, 1, 0.5, 1), width 0.3s, height 0.3s, border-color 0.3s;
+    }
+
+    /* Hover effect for cursor */
+    body.cursor-hovered .custom-cursor {
+      width: 16px;
+      height: 16px;
+      background: rgba(118, 247, 234, 0.9);
+      box-shadow: 0 0 15px rgba(13, 148, 136, 0.4);
+    }
+
+    body.cursor-hovered .custom-cursor-follower {
+      width: 48px;
+      height: 48px;
+      border-color: var(--primary-dark);
+      background: rgba(13, 148, 136, 0.05);
+    }
+
+    a, button {
+      cursor: none; /* Hide default cursor */
+    }
+
+    /* Header */
+    .site-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 76px;
+      background: rgba(245, 247, 248, 0.6);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      z-index: 100;
+      transition: background 0.3s;
+    }
+
+    .site-header:hover {
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .site-nav {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: var(--font-logo);
+      letter-spacing: -0.04em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .logo span {
+      color: var(--primary-dark);
+    }
+
+    .logo::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      margin-left: 4px;
+      border-radius: 50%;
+      background: var(--primary-dark);
+      box-shadow: 0 0 10px rgba(13, 148, 136, 0.4);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.3s, transform 0.2s;
+      position: relative;
+      padding: 4px 0;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--primary-dark);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Main Content Layout */
+    .home-main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      height: 100vh;
+      padding-top: 76px;
+      position: relative;
+    }
+
+    /* Glassmorphism Sidebar */
+    .side-panel {
+      background: var(--surface);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-right: 1px solid var(--border);
+      padding: 32px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      z-index: 10;
+      box-shadow: 10px 0 30px rgba(15, 23, 42, 0.02);
+    }
+
+    .intro-section h1 {
+      font-size: 28px;
+      line-height: 1.35;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #0F172A 30%, #334155);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .intro-section .description {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Floating / Glass Search Box */
+    .search-section h2 {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+    }
+
+    .search-box {
+      display: flex;
+      background: rgba(15, 23, 42, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--primary-dark);
+      box-shadow: 0 0 15px rgba(13, 148, 136, 0.08);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .search-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-box input::placeholder {
+      color: rgba(15, 23, 42, 0.35);
+    }
+
+    .search-box button {
+      background: var(--primary);
+      color: #0F172A;
+      border: none;
+      border-radius: calc(var(--radius-md) - 4px);
+      padding: 0 20px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .search-box button:hover {
+      background: var(--primary-dark);
+      color: #fff;
+      transform: scale(0.98);
+    }
+
+    /* Category Section */
+    .category-section h2 {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+    }
+
+    .category-list {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      mask-image: linear-gradient(to right, white 85%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, white 85%, transparent 100%);
+    }
+
+    .category-button {
+      white-space: nowrap;
+      padding: 8px 16px;
+      border-radius: 99px;
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-button:hover {
+      color: var(--text);
+      border-color: rgba(0, 0, 0, 0.15);
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .category-button.active {
+      background: rgba(13, 148, 136, 0.08);
+      border-color: var(--primary-dark);
+      color: var(--primary-dark);
+      box-shadow: 0 0 10px rgba(13, 148, 136, 0.05);
+    }
+
+    /* Recommendation Cards */
+    .recommend-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .recommend-section h2 {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+
+    .place-card {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .place-card:hover {
+      transform: translateY(-4px);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: var(--border-bright);
+      box-shadow: 0 12px 30px rgba(13, 148, 136, 0.05);
+    }
+
+    .place-card.active {
+      background: rgba(13, 148, 136, 0.05);
+      border-color: var(--primary-dark);
+      box-shadow: 0 0 20px rgba(13, 148, 136, 0.08);
+    }
+
+    .place-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .place-card:hover img {
+      transform: scale(1.04);
+    }
+
+    .place-content {
+      padding: 18px;
+    }
+
+    .place-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .place-content p {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .tag-list {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      background: rgba(13, 148, 136, 0.08);
+      color: var(--primary-dark);
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-weight: 600;
+      border: 1px solid rgba(13, 148, 136, 0.12);
+    }
+
+    /* Full-Bleed Map Section */
+    .map-section {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, #FCFDFD 0%, #EBF3F5 100%);
+      overflow: hidden;
+    }
+
+    /* Abstract Tech Grid Background */
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(13, 148, 136, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(13, 148, 136, 0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      background-position: center center;
+    }
+
+    /* Abstract Decorative Elements */
+    .map-abstract-shapes {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .map-radar-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(13, 148, 136, 0.06);
+      border-radius: 50%;
+      animation: radar-pulse 10s infinite linear;
+    }
+
+    .map-radar-circle.c1 { width: 300px; height: 300px; }
+    .map-radar-circle.c2 { width: 600px; height: 600px; animation-duration: 20s; }
+    .map-radar-circle.c3 { width: 900px; height: 900px; animation-duration: 30s; }
+
+    @keyframes radar-pulse {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* SVG Abstract Landmass contours */
+    .abstract-landmass {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
+      opacity: 0.12;
+      fill: none;
+      stroke: var(--primary-dark);
+      stroke-width: 1.5;
+      stroke-dasharray: 4, 12;
+      pointer-events: none;
+    }
+
+    /* Map Coordinates Overlay */
+    .map-label {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow);
+      z-index: 5;
+      pointer-events: none;
+      animation: fade-in 0.8s ease-out;
+    }
+
+    .map-label h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      font-family: var(--font-logo);
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .map-label p {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* Custom Floating Neon Markers */
+    .marker {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      transform: translate(-50%, -50%);
+      background: transparent;
+      border: none;
+      z-index: 20;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .marker-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(118, 247, 234, 0.25);
+      border: 2px solid var(--primary-dark);
+      box-shadow: 0 0 15px rgba(13, 148, 136, 0.4);
+      transition: all 0.3s;
+    }
+
+    .marker-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text);
+      transition: all 0.3s;
+    }
+
+    .marker-label {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s, top 0.3s;
+      box-shadow: var(--shadow);
+    }
+
+    /* Pulsing background effect */
+    .marker::before {
+      content: "";
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(13, 148, 136, 0.2);
+      opacity: 0;
+      animation: marker-pulse-glow 2.5s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes marker-pulse-glow {
+      0% { transform: scale(0.6); opacity: 0.8; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    /* Marker Hover & Active States */
+    .marker:hover .marker-ring {
+      transform: scale(1.25);
+      border-color: var(--primary-dark);
+      box-shadow: 0 0 25px rgba(13, 148, 136, 0.6);
+    }
+
+    .marker:hover .marker-label {
+      opacity: 1;
+      top: -36px;
+    }
+
+    .marker:hover .marker-dot {
+      background: var(--primary-dark);
+    }
+
+    .marker.active .marker-ring {
+      transform: scale(1.3);
+      border-color: var(--primary-dark);
+      background: var(--primary);
+      box-shadow: 0 0 30px rgba(118, 247, 234, 0.8);
+    }
+
+    .marker.active .marker-dot {
+      background: var(--primary-dark);
+    }
+
+    .marker.active .marker-label {
+      opacity: 1;
+      top: -36px;
+      border-color: var(--primary-dark);
+      color: var(--primary-dark);
+    }
+
+    /* Selected Destination Floating Card (Arc / Apple Maps Vibe) */
+    .selected-panel {
+      position: absolute;
+      right: 28px;
+      bottom: 28px;
+      width: 380px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      z-index: 30;
+      transform: translateY(30px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .selected-panel.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .selected-panel-img-container {
+      position: relative;
+      height: 200px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .selected-panel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .selected-panel-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      transition: all 0.2s;
+    }
+
+    .selected-panel-close:hover {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: var(--primary-dark);
+      transform: scale(1.05);
+    }
+
+    .selected-content {
+      padding: 24px;
+    }
+
+    .selected-content h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-size: 13.5px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      background: rgba(217, 119, 6, 0.08);
+      border: 1px solid rgba(217, 119, 6, 0.15);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    .selected-content p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .detail-button {
+      flex: 1;
+      background: var(--primary);
+      color: #0F172A;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 14px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(118, 247, 234, 0.2);
+    }
+
+    .detail-button:hover {
+      background: var(--primary-dark);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(13, 148, 136, 0.3);
+    }
+
+    .favorite-button {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: rgba(0, 0, 0, 0.02);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .favorite-button:hover {
+      border-color: var(--primary-dark);
+      background: rgba(13, 148, 136, 0.05);
+      color: var(--primary-dark);
+    }
+
+    /* Footer */
+    .site-footer {
+      position: absolute;
+      bottom: 24px;
+      left: 448px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .site-footer p {
+      color: rgba(15, 23, 42, 0.35);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Animation effects */
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Mobile Design */
+    @media (max-width: 1023px) {
+      body {
+        overflow-y: auto;
+        height: auto;
+      }
+
+      .custom-cursor, .custom-cursor-follower {
+        display: none !important; /* Hide custom cursor on touch devices */
+      }
+
+      .home-main {
+        grid-template-columns: 1fr;
+        height: auto;
+        padding-top: 76px;
+      }
+
+      .side-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        box-shadow: none;
+        height: auto;
+        padding: 24px 20px;
+        background: rgba(255, 255, 255, 0.95);
+      }
+
+      .map-section {
+        height: 500px;
+      }
+
+      .selected-panel {
+        position: fixed;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        width: calc(100% - 40px);
+        z-index: 999;
+      }
+
+      .site-footer {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        padding: 24px 20px;
+        background: #F5F7F8;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .site-header {
+        padding: 0 20px;
+      }
+
+      .nav-links {
+        display: none; /* Hide header links on tiny mobile devices */
+      }
+
+      .intro-section h1 {
+        font-size: 24px;
+      }
+
+      .selected-panel {
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        transform: translateY(100%);
+      }
+
+      .selected-panel.show {
+        transform: translateY(0);
+      }
+
+      .selected-panel-img-container {
+        height: 160px;
+      }
+
+      .selected-content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Custom Cursor Followers -->
+  <div class="custom-cursor" id="cursor"></div>
+  <div class="custom-cursor-follower" id="cursorFollower"></div>
+
+  <!-- Main Header -->
+  <header class="site-header">
+    <nav class="site-nav" aria-label="메인 내비게이션">
+      <a href="#" class="logo" aria-label="Yonder home">
+        yon<span>der</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#explore">Explore</a>
+        <a href="#favorites">Favorites</a>
+        <a href="#destinations">Destinations</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content Structure -->
+  <main class="home-main">
+    <!-- Glassmorphic Search & Recommended Places Panel -->
+    <aside class="side-panel">
+      <section class="intro-section" aria-labelledby="intro-title">
+        <h1 id="intro-title">세계 곳곳의 여행지를<br>지도에서 발견하세요</h1>
+        <p class="description">
+          파리, 발리, 뉴욕, 산토리니, 도쿄, 아이슬란드 등 해외 주요 중심지의 정보를 감성적인 인터랙티브 지도로 시각화했습니다.<br> 
+          마커를 눌러 가상 여정을 즐겨보세요.
+        </p>
+      </section>
+
+      <!-- Glass Search Component -->
+      <section class="search-section" aria-labelledby="search-title">
+        <h2 id="search-title">해외 여행지 검색</h2>
+        <form class="search-box" id="searchForm" onsubmit="event.preventDefault();">
+          <label for="search-input" hidden>여행지 검색어</label>
+          <input id="search-input" type="search" placeholder="Paris, Bali, New York, Tokyo..." />
+          <button type="submit">검색</button>
+        </form>
+      </section>
+
+      <!-- Floating Category Filters -->
+      <section class="category-section" aria-labelledby="category-title">
+        <h2 id="category-title">여행 스타일</h2>
+        <div class="category-list" role="tablist">
+          <button class="category-button active" role="tab" aria-selected="true" data-category="all">전체</button>
+          <button class="category-button" role="tab" aria-selected="false" data-category="city">도시</button>
+          <button class="category-button" role="tab" aria-selected="false" data-category="resort">휴양지</button>
+          <button class="category-button" role="tab" aria-selected="false" data-category="nature">자연</button>
+        </div>
+      </section>
+
+      <!-- Interactive Travel Cards -->
+      <section class="recommend-section" aria-labelledby="recommend-title" id="recommendList">
+        <h2 id="recommend-title">추천 해외 여행지</h2>
+        <!-- Items are populated dynamically by JavaScript to keep logic pristine and single-source -->
+      </section>
+    </aside>
+
+    <!-- Map Board -->
+    <section class="map-section" aria-label="해외 여행지 추천 지도" id="mapSection">
+      <!-- Grid Overlay -->
+      <div class="map-grid"></div>
+
+      <!-- Radar animations -->
+      <div class="map-abstract-shapes">
+        <div class="map-radar-circle c1"></div>
+        <div class="map-radar-circle c2"></div>
+        <div class="map-radar-circle c3"></div>
+      </div>
+
+      <!-- Abstract Contours Map -->
+      <svg class="abstract-landmass" viewBox="0 0 1000 600">
+        <!-- Abstract Path representing stylized map continents -->
+        <path d="M 150 120 Q 250 80 320 180 T 500 220 T 700 150 T 850 300 Q 900 450 780 480 T 550 420 T 350 500 T 150 400 Z" />
+        <path d="M 400 100 Q 420 80 450 110 T 500 90 T 550 150 Z" />
+        <path d="M 220 280 Q 280 250 300 320 T 250 400 Z" />
+      </svg>
+
+      <!-- Map Overlay HUD Info -->
+      <article class="map-label">
+        <h2>Global Abstract Space</h2>
+        <p>마커를 탐색하여 숨겨진 오아시스를 클릭해 보세요.</p>
+      </article>
+
+      <!-- Markers Placeholder -->
+      <div id="markersContainer"></div>
+
+      <!-- Selected Destination Floating Card (Glass Overlay) -->
+      <section class="selected-panel" id="detailPanel" aria-label="선택한 해외 여행지 정보">
+        <div class="selected-panel-img-container">
+          <img id="detailImg" referrerpolicy="no-referrer" src="" alt="" />
+          <button class="selected-panel-close" id="closeDetail" aria-label="상세 정보 닫기">&times;</button>
+        </div>
+
+        <article class="selected-content">
+          <h2 id="detailTitle">Paris, France</h2>
+          <div class="rating" id="detailRating">★ 4.9 · Romantic City</div>
+          <p id="detailDesc">
+            예술과 역사, 세련된 미식이 어우러진 세계 최고의 낭만적인 도시입니다.
+          </p>
+          <div class="action-row">
+            <a href="#" class="detail-button" id="detailLink">상세보기</a>
+            <button class="favorite-button" aria-label="즐겨찾기 추가">&hearts;</button>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 yonder. Inc. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Destinations Data Model
+    const destinations = [
+      {
+        id: "paris",
+        name: "Paris",
+        country: "France",
+        title: "Paris, France",
+        type: "city",
+        image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80",
+        rating: "★ 4.9 · Romantic City",
+        desc: "예술과 역사, 세련된 미식이 어우러진 세계 최고의 낭만적인 도시입니다. 에펠탑과 세느강변을 걸으며 파리의 낭만을 느껴보세요.",
+        tags: ["도시", "예술", "미식"],
+        x: 38,
+        y: 36
+      },
+      {
+        id: "bali",
+        name: "Bali",
+        country: "Indonesia",
+        title: "Bali, Indonesia",
+        type: "resort",
+        image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=600&q=80",
+        rating: "★ 4.8 · Tropical Paradise",
+        desc: "신들의 섬이라 불리는 발리에서 평화로운 우붓의 라이스 테라스와 울루와투 해변의 절경을 감상하고 서핑과 요가 리트릿을 즐겨보세요.",
+        tags: ["휴양지", "자연", "해변"],
+        x: 72,
+        y: 72
+      },
+      {
+        id: "newyork",
+        name: "New York",
+        country: "USA",
+        title: "New York, USA",
+        type: "city",
+        image: "https://images.unsplash.com/photo-1534430480872-3498386e7856?auto=format&fit=crop&w=600&q=80",
+        rating: "★ 4.7 · Big Apple",
+        desc: "잠들지 않는 도시 뉴욕. 타임스 스퀘어의 휘황찬란한 네온사인 아래에서 브로드웨이 뮤지컬을 감상하고 엠파이어 스테이트 빌딩의 전망을 즐기세요.",
+        tags: ["도시", "쇼핑", "야경"],
+        x: 18,
+        y: 42
+      },
+      {
+        id: "santorini",
+        name: "Santorini",
+        country: "Greece",
+        title: "Santorini, Greece",
+        type: "resort",
+        image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=600&q=80",
+        rating: "★ 4.9 · Mediterranean Gem",
+        desc: "그리스 지중해의 환상적인 섬. 파란 지붕의 하얀 가옥들과 에메랄드빛 바다가 만들어내는 눈부신 대조와 일몰의 낭만이 가득합니다.",
+        tags: ["휴양지", "자연", "야경"],
+        x: 48,
+        y: 48
+      },
+      {
+        id: "tokyo",
+        name: "Tokyo",
+        country: "Japan",
+        title: "Tokyo, Japan",
+        type: "city",
+        image: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80",
+        rating: "★ 4.8 · Neon Future",
+        desc: "미래형 초고층 빌딩과 고즈넉한 메이지 신궁이 나란히 숨 쉬는 다채로운 도시. 세계 최고의 미식 트렌드와 쇼핑 문화를 만끽해 보세요.",
+        tags: ["도시", "미식", "쇼핑"],
+        x: 82,
+        y: 40
+      },
+      {
+        id: "iceland",
+        name: "Iceland",
+        country: "Iceland",
+        title: "Iceland",
+        type: "nature",
+        image: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=80",
+        rating: "★ 4.9 · Land of Fire & Ice",
+        desc: "태초의 지구를 닮은 신비로운 빙하 대자연. 춤추는 오로라와 거대한 간헐천, 신비로운 블루라군 온천에서 지상 최고의 힐링을 선사합니다.",
+        tags: ["자연", "야경", "휴양지"],
+        x: 35,
+        y: 18
+      }
+    ];
+
+    // DOM References
+    const cursor = document.getElementById("cursor");
+    const cursorFollower = document.getElementById("cursorFollower");
+    const recommendList = document.getElementById("recommendList");
+    const markersContainer = document.getElementById("markersContainer");
+    const detailPanel = document.getElementById("detailPanel");
+    const detailImg = document.getElementById("detailImg");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailRating = document.getElementById("detailRating");
+    const detailDesc = document.getElementById("detailDesc");
+    const closeDetail = document.getElementById("closeDetail");
+    const searchInput = document.getElementById("search-input");
+    const searchForm = document.getElementById("searchForm");
+    const categoryButtons = document.querySelectorAll(".category-button");
+
+    let activeFilter = "all";
+    let searchQuery = "";
+
+    // Initialize Cursor Movement
+    document.addEventListener("mousemove", (e) => {
+      cursor.style.left = e.clientX + "px";
+      cursor.style.top = e.clientY + "px";
+      
+      // Add slight lag to the follower circle
+      setTimeout(() => {
+        cursorFollower.style.left = e.clientX + "px";
+        cursorFollower.style.top = e.clientY + "px";
+      }, 40);
+    });
+
+    // Custom Cursor Hover Bindings
+    function applyCursorEvents() {
+      const interactiveElements = document.querySelectorAll("a, button, .place-card, .marker");
+      interactiveElements.forEach((el) => {
+        el.addEventListener("mouseenter", () => {
+          document.body.classList.add("cursor-hovered");
+        });
+        el.addEventListener("mouseleave", () => {
+          document.body.classList.remove("cursor-hovered");
+        });
+      });
+    }
+
+    // Render Side list cards & Map markers
+    function render() {
+      // 1. Filter Data
+      const filtered = destinations.filter(d => {
+        const matchesCategory = activeFilter === "all" || d.type === activeFilter;
+        const matchesSearch = d.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              d.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              d.tags.some(t => t.includes(searchQuery));
+        return matchesCategory && matchesSearch;
+      });
+
+      // 2. Render Cards
+      recommendList.innerHTML = `<h2 id="recommend-title">추천 해외 여행지 (${filtered.length})</h2>`;
+      if (filtered.length === 0) {
+        recommendList.innerHTML += `<div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px 0;">검색 결과가 없습니다.</div>`;
+      } else {
+        filtered.forEach(d => {
+          const card = document.createElement("article");
+          card.className = "place-card";
+          card.id = `card-${d.id}`;
+          card.setAttribute("tabindex", "0");
+          card.setAttribute("role", "button");
+          card.setAttribute("aria-label", `${d.title} 상세보기 카드`);
+          card.innerHTML = `
+            <img src="${d.image}" referrerpolicy="no-referrer" alt="${d.title} 이미지" />
+            <div class="place-content">
+              <h3>${d.title}</h3>
+              <p>${d.desc}</p>
+              <div class="tag-list">
+                ${d.tags.map(tag => `<span class="tag">${tag}</span>`).join("")}
+              </div>
+            </div>
+          `;
+          
+          card.addEventListener("click", () => {
+            selectDestination(d.id);
+          });
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              selectDestination(d.id);
+            }
+          });
+
+          recommendList.appendChild(card);
+        });
+      }
+
+      // 3. Render Markers
+      markersContainer.innerHTML = "";
+      destinations.forEach(d => {
+        // Only show marker on map if it passes the current filter (optionally we can keep all markers but dim them. Let's keep them and make filtered ones more prominent, or filter them out. Let's filter them out for a clean look).
+        const isVisible = filtered.some(fd => fd.id === d.id);
+        if (!isVisible) return;
+
+        const btn = document.createElement("button");
+        btn.className = "marker";
+        btn.id = `marker-${d.id}`;
+        btn.style.left = `${d.x}%`;
+        btn.style.top = `${d.y}%`;
+        btn.setAttribute("aria-label", `${d.title} 마커`);
+        btn.innerHTML = `
+          <div class="marker-ring"></div>
+          <div class="marker-dot"></div>
+          <div class="marker-label">${d.title}</div>
+        `;
+
+        btn.addEventListener("click", () => {
+          selectDestination(d.id);
+        });
+
+        markersContainer.appendChild(btn);
+      });
+
+      applyCursorEvents();
+    }
+
+    // Select Destination (Sync state between Sidebar, Marker and Detail Card)
+    function selectDestination(id) {
+      // Clear previous active states
+      document.querySelectorAll(".place-card").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll(".marker").forEach(m => m.classList.remove("active"));
+
+      const dest = destinations.find(d => d.id === id);
+      if (!dest) return;
+
+      // Highlight active sidebar card
+      const card = document.getElementById(`card-${id}`);
+      if (card) {
+        card.classList.add("active");
+        card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      // Highlight active map marker
+      const marker = document.getElementById(`marker-${id}`);
+      if (marker) {
+        marker.classList.add("active");
+      }
+
+      // Update and Show detail panel
+      detailImg.src = dest.image;
+      detailImg.alt = `${dest.title} 대표 이미지`;
+      detailTitle.textContent = dest.title;
+      detailRating.textContent = dest.rating;
+      detailDesc.textContent = dest.desc;
+      
+      detailPanel.classList.add("show");
+
+      // Auto-focus on map section slightly on mobile
+      if (window.innerWidth < 1024) {
+        document.getElementById("mapSection").scrollIntoView({ behavior: "smooth" });
+      }
+    }
+
+    // Event Listeners
+    // Category tabs
+    categoryButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        categoryButtons.forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+        activeFilter = btn.getAttribute("data-category");
+        render();
+      });
+    });
+
+    // Search Box Submit
+    searchForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      searchQuery = searchInput.value.trim();
+      render();
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value.trim();
+      render();
+    });
+
+    // Close Detail Panel
+    closeDetail.addEventListener("click", () => {
+      detailPanel.classList.remove("show");
+      document.querySelectorAll(".place-card").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll(".marker").forEach(m => m.classList.remove("active"));
+    });
+
+    // Initialize Page
+    render();
+    // Default select Paris
+    setTimeout(() => {
+      selectDestination("paris");
+    }, 400);
+
+  </script>
+</body>
+</html>
